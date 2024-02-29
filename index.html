@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Blur Up Thumbs</title>
+
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 2rem;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1rem;
+      }
+
+      img {
+        width: 100%;
+      }
+
+      code {
+        display: block;
+        margin-top: 1em;
+        word-break: break-all;
+      }
+    </style>
+
+  </head>
+  <body>
+    <h1>Compare Blur Up Thumbs</h1>
+
+    <div class="table">
+      <div class="row">
+        <div id="original">
+          <h3>Original</h3>
+          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=320" data-img-size="320">
+          <code></code>
+        </div>
+
+        <div id="svg-blur1">
+          <h3>WebP 16px + SVG blur</h3>
+          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=16" data-blur="svg">
+          <code></code>
+        </div>
+
+        <div id="svg-blur2">
+          <h3>WebP 6px + SVG blur</h3>
+          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=6" data-img-size="6" data-blur="svg">
+          <code></code>
+        </div>
+
+        <div id="thumbhash">
+          <h3>ThumbHash</h3>
+          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=100" data-blur="thumbhash">
+          <code></code>
+        </div>
+
+        <div id="blurhash">
+          <h3>BlurHash</h3>
+          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=100" data-blur="blurhash">
+          <code></code>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { encode, decode } from 'https://cdn.jsdelivr.net/npm/blurhash@2.0.5/dist/index.mjs';
+      import { rgbaToThumbHash, thumbHashToDataURL, rgbaToDataURL } from 'https://cdn.jsdelivr.net/npm/thumbhash@0.1.1/thumbhash.js';
+
+      for (const row of document.querySelectorAll('.row')) {
+        for (const div of row.children) {
+
+          const blurImg = div.querySelector('img');
+          let src = blurImg.dataset.src;
+
+          if (blurImg.dataset.blur === 'svg') {
+            const response = await fetch(src);
+            const arrayBuffer = await response.arrayBuffer();
+            const base64String = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+            const blurDataURL = `data:image/webp;base64,${base64String}`;
+            const blurCode = div.querySelector('code');
+            blurCode.textContent = `${base64String}`;
+            src = `data:image/svg+xml;charset=utf-8,${svgBlurImage(blurDataURL, 320, 180)}`;
+          }
+          else if (blurImg.dataset.blur === 'blurhash') {
+            const blurCode = div.querySelector('code');
+            const image = await loadImage(src);
+            const imageData = getImageData(image);
+            const blurhash = encode(imageData.data, imageData.width, imageData.height, 4, 4);
+            blurCode.textContent = `${blurhash}`;
+            const pixels = decode(blurhash, imageData.width, imageData.height);
+            src = rgbaToDataURL(imageData.width, imageData.height, pixels);
+          }
+          else if (blurImg.dataset.blur === 'thumbhash') {
+            const blurCode = div.querySelector('code');
+            const image = await loadImage(src);
+            const imageData = getImageData(image);
+            const thumbhash = rgbaToThumbHash(imageData.width, imageData.height, imageData.data);
+            blurCode.textContent = `${btoa(thumbhash)}`;
+            src = thumbHashToDataURL(thumbhash);
+          }
+
+          div.querySelector('img').src = src;
+        }
+      }
+
+      function svgBlurImage(blurDataURL, width, height) {
+        const svg = /*html*/`<svg xmlns="http://www.w3.org/2000/svg" ${width ? `width="${width}"` : ''} ${height ? `height="${height}"` : ''}><filter id="b" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="20"/><feComponentTransfer><feFuncA type="discrete" tableValues="1 1"/></feComponentTransfer></filter><g filter="url(#b)"><image width="100%" height="100%" href="${blurDataURL}"/></g></svg>`;
+        return svg.replace(/#/g, '%23');
+      }
+
+      async function loadImage(src) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = (...args) => reject(args);
+          img.crossOrigin = 'anonymous';
+          img.src = src;
+        });
+      }
+
+      function getImageData(image) {
+        const canvas = document.createElement("canvas");
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const context = canvas.getContext("2d");
+        context.drawImage(image, 0, 0);
+        return context.getImageData(0, 0, image.width, image.height);
+      }
+    </script>
+
+  </body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "blur-up-thumbs",
+  "version": "0.0.0",
+  "description": "Compare blur up thumbnail techniques.",
+  "main": "index.html",
+  "author": "@muxinc",
+  "license": "MIT",
+  "scripts": {
+    "start": "wet serve --cors --livereload"
+  },
+  "devDependencies": {
+    "wet-run": "^1.2.0"
+  },
+  "keywords": [
+    "blurhash",
+    "thumbhash",
+    "image",
+    "video",
+    "thumbnail",
+    "LQIP",
+    "blurry image"
+  ]
+}
