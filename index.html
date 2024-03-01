@@ -3,7 +3,6 @@
   <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Blur Up Thumbs</title>
-
     <style>
       body {
         font-family: sans-serif;
@@ -26,43 +25,90 @@
         word-break: break-all;
       }
     </style>
-
   </head>
   <body>
     <h1>Compare Blur Up Thumbs</h1>
 
     <div class="table">
+
       <div class="row">
-        <div id="original">
+        <div>
           <h3>Original</h3>
-          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=320" data-img-size="320">
+          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=320" data-size="320">
           <code></code>
         </div>
 
-        <div id="svg-blur1">
+        <div>
           <h3>WebP 16px + SVG blur</h3>
-          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=16" data-blur="svg">
+          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=16" data-size="16" data-blur="svg">
           <code></code>
         </div>
 
-        <div id="svg-blur2">
-          <h3>WebP 6px + SVG blur</h3>
-          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=6" data-img-size="6" data-blur="svg">
-          <code></code>
-        </div>
-
-        <div id="thumbhash">
+        <div>
           <h3>ThumbHash</h3>
-          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=100" data-blur="thumbhash">
+          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=100" data-size="100" data-blur="thumbhash">
           <code></code>
         </div>
 
-        <div id="blurhash">
+        <div>
           <h3>BlurHash</h3>
-          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=100" data-blur="blurhash">
+          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp?width=100" data-size="100" data-blur="blurhash">
           <code></code>
         </div>
       </div>
+
+      <div class="row">
+        <div>
+          <h3>Original</h3>
+          <img data-src="https://imagedelivery.net/tFTZvontmzoTHZT963JqOw/b611cfd5-e269-4b36-1adb-3714b51c2c00/public">
+          <code></code>
+        </div>
+
+        <div>
+          <h3>WebP 16px + SVG blur</h3>
+          <img data-src="https://imagedelivery.net/tFTZvontmzoTHZT963JqOw/b611cfd5-e269-4b36-1adb-3714b51c2c00/16w" data-size="16" data-blur="svg">
+          <code></code>
+        </div>
+
+        <div>
+          <h3>ThumbHash</h3>
+          <img data-src="https://imagedelivery.net/tFTZvontmzoTHZT963JqOw/b611cfd5-e269-4b36-1adb-3714b51c2c00/100w" data-size="100" data-blur="thumbhash">
+          <code></code>
+        </div>
+
+        <div>
+          <h3>BlurHash</h3>
+          <img data-src="https://imagedelivery.net/tFTZvontmzoTHZT963JqOw/b611cfd5-e269-4b36-1adb-3714b51c2c00/100w" data-size="100" data-blur="blurhash">
+          <code></code>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <h3>Original</h3>
+          <img data-src="https://imagedelivery.net/tFTZvontmzoTHZT963JqOw/f955682e-9446-4fca-5659-70adb8f2ba00/public">
+          <code></code>
+        </div>
+
+        <div>
+          <h3>WebP 16px + SVG blur</h3>
+          <img data-src="https://imagedelivery.net/tFTZvontmzoTHZT963JqOw/f955682e-9446-4fca-5659-70adb8f2ba00/16w" data-size="16" data-blur="svg">
+          <code></code>
+        </div>
+
+        <div>
+          <h3>ThumbHash</h3>
+          <img data-src="https://imagedelivery.net/tFTZvontmzoTHZT963JqOw/f955682e-9446-4fca-5659-70adb8f2ba00/100w" data-size="100" data-blur="thumbhash">
+          <code></code>
+        </div>
+
+        <div>
+          <h3>BlurHash</h3>
+          <img data-src="https://imagedelivery.net/tFTZvontmzoTHZT963JqOw/f955682e-9446-4fca-5659-70adb8f2ba00/100w" data-size="100" data-blur="blurhash">
+          <code></code>
+        </div>
+      </div>
+
     </div>
 
     <script type="module">
@@ -74,32 +120,49 @@
 
           const blurImg = div.querySelector('img');
           let src = blurImg.dataset.src;
+          let size = Number(blurImg.dataset.size);
+          let accept = blurImg.dataset.accept;
 
           if (blurImg.dataset.blur === 'svg') {
-            const response = await fetch(src);
+
+            const response = await fetch(src, {
+              headers: {
+                'Accept': accept ?? 'image/webp',
+              },
+            });
+
             const arrayBuffer = await response.arrayBuffer();
             const base64String = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-            const blurDataURL = `data:image/webp;base64,${base64String}`;
+            const blurDataURL = `data:${response.headers.get('content-type')};base64,${base64String}`;
+            const image = await loadImage(src);
+            const aspectRatio = image.width / image.height;
+            src = `data:image/svg+xml;charset=utf-8,${svgBlurImage(blurDataURL, 320, 320 / aspectRatio)}`;
+
             const blurCode = div.querySelector('code');
             blurCode.textContent = `${base64String}`;
-            src = `data:image/svg+xml;charset=utf-8,${svgBlurImage(blurDataURL, 320, 180)}`;
           }
           else if (blurImg.dataset.blur === 'blurhash') {
-            const blurCode = div.querySelector('code');
+
             const image = await loadImage(src);
+            // const resized = await resizeImage(image, size);
             const imageData = getImageData(image);
             const blurhash = encode(imageData.data, imageData.width, imageData.height, 4, 4);
-            blurCode.textContent = `${blurhash}`;
             const pixels = decode(blurhash, imageData.width, imageData.height);
             src = rgbaToDataURL(imageData.width, imageData.height, pixels);
+
+            const blurCode = div.querySelector('code');
+            blurCode.textContent = `${blurhash}`;
           }
           else if (blurImg.dataset.blur === 'thumbhash') {
-            const blurCode = div.querySelector('code');
+
             const image = await loadImage(src);
+            // const resized = await resizeImage(image, size);
             const imageData = getImageData(image);
             const thumbhash = rgbaToThumbHash(imageData.width, imageData.height, imageData.data);
-            blurCode.textContent = `${btoa(thumbhash)}`;
             src = thumbHashToDataURL(thumbhash);
+
+            const blurCode = div.querySelector('code');
+            blurCode.textContent = `${binaryToBase64(thumbhash)}`;
           }
 
           div.querySelector('img').src = src;
@@ -122,13 +185,38 @@
       }
 
       function getImageData(image) {
-        const canvas = document.createElement("canvas");
+        const canvas = document.createElement('canvas');
         canvas.width = image.width;
         canvas.height = image.height;
-        const context = canvas.getContext("2d");
+        const context = canvas.getContext('2d');
         context.drawImage(image, 0, 0);
         return context.getImageData(0, 0, image.width, image.height);
       }
+
+      function binaryToBase64(binary) {
+        return btoa(String.fromCharCode(...binary));
+      }
+
+      async function resizeImage(image, width) {
+        if (image.width <= width) return image;
+
+        const scale = width / Math.max(image.width, image.height)
+
+        return await createImageBitmap(image, {
+          resizeWidth: Math.round(image.width * scale),
+          resizeHeight: Math.round(image.height * scale),
+        });
+      }
+
+      function toWebpDataURL(imageData) {
+        const canvas = document.createElement('canvas');
+        canvas.width = imageData.width;
+        canvas.height = imageData.height;
+        const context = canvas.getContext('2d');
+        context.putImageData(imageData, 0, 0);
+        return canvas.toDataURL('image/webp');
+      }
+
     </script>
 
   </body>
