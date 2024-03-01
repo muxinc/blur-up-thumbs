@@ -20,11 +20,15 @@
       }
 
       code {
-        font-size: 0.8em;
         display: block;
-        padding: 0.5em;
+        font-size: 0.8em;
         margin-top: 1em;
         word-break: break-all;
+      }
+
+      small {
+        color: firebrick;
+        font-size: 0.8em;
       }
     </style>
   </head>
@@ -180,6 +184,10 @@
 
             const blurCode = div.querySelector('code');
             blurCode.textContent = `${blurhash}`;
+
+            const small = document.createElement('small');
+            small.textContent = `Requires JS decoder`;
+            blurCode.after(small);
           }
           else if (blurImg.dataset.blur === 'thumbhash') {
 
@@ -191,6 +199,10 @@
 
             const blurCode = div.querySelector('code');
             blurCode.textContent = `${binaryToBase64(thumbhash)}`;
+
+            const small = document.createElement('small');
+            small.textContent = `Requires JS decoder`;
+            blurCode.after(small);
           }
 
           div.querySelector('img').src = src;
