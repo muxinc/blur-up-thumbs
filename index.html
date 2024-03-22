@@ -41,26 +41,22 @@
       <div class="row">
         <div>
           <h3>Original</h3>
-          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp" data-max-size="320">
-          <code></code>
+          <img data-src="https://image.mux.com/O6LdRc0112FEJXH00bGsN9Q31yu5EIVHTgjTKRkKtEq1k/thumbnail.webp" data-max-size="320">
         </div>
 
         <div>
           <h3>WebP 16px + Gaussian blur</h3>
-          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp" data-max-size="16" data-blur="svg">
-          <code></code>
+          <img data-src="https://image.mux.com/O6LdRc0112FEJXH00bGsN9Q31yu5EIVHTgjTKRkKtEq1k/thumbnail.webp" data-max-size="16" data-blur="svg">
         </div>
 
         <div>
           <h3>ThumbHash</h3>
-          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp" data-max-size="100" data-blur="thumbhash">
-          <code></code>
+          <img data-src="https://image.mux.com/O6LdRc0112FEJXH00bGsN9Q31yu5EIVHTgjTKRkKtEq1k/thumbnail.webp" data-max-size="100" data-blur="thumbhash">
         </div>
 
         <div>
           <h3>BlurHash</h3>
-          <img data-src="https://image.mux.com/8008zBLgo5nT01eCTYGPQijbhUTMC02d2Mjww00PGjCa9ms/thumbnail.webp" data-max-size="100" data-blur="blurhash">
-          <code></code>
+          <img data-src="https://image.mux.com/O6LdRc0112FEJXH00bGsN9Q31yu5EIVHTgjTKRkKtEq1k/thumbnail.webp" data-max-size="100" data-blur="blurhash">
         </div>
       </div>
 
@@ -68,25 +64,21 @@
         <div>
           <h3>Original</h3>
           <img data-src="https://image.mux.com/sxY31L6Opl02RWPpm3Gro9XTe7fRHBjs92x93kiB1vpc/thumbnail.webp" data-max-size="320">
-          <code></code>
         </div>
 
         <div>
           <h3>WebP 16px + Gaussian blur</h3>
           <img data-src="https://image.mux.com/sxY31L6Opl02RWPpm3Gro9XTe7fRHBjs92x93kiB1vpc/thumbnail.webp" data-max-size="16" data-blur="svg">
-          <code></code>
         </div>
 
         <div>
           <h3>ThumbHash</h3>
           <img data-src="https://image.mux.com/sxY31L6Opl02RWPpm3Gro9XTe7fRHBjs92x93kiB1vpc/thumbnail.webp" data-max-size="100" data-blur="thumbhash">
-          <code></code>
         </div>
 
         <div>
           <h3>BlurHash</h3>
           <img data-src="https://image.mux.com/sxY31L6Opl02RWPpm3Gro9XTe7fRHBjs92x93kiB1vpc/thumbnail.webp" data-max-size="100" data-blur="blurhash">
-          <code></code>
         </div>
       </div>
 
@@ -121,8 +113,9 @@
             const aspectRatio = image.width / image.height;
             src = `data:image/svg+xml;charset=utf-8,${svgBlurImage(blurDataURL, 320, 320 / aspectRatio)}`;
 
-            const blurCode = div.querySelector('code');
+            const blurCode = document.createElement('code');
             blurCode.textContent = `${base64String}`;
+            blurImg.after(blurCode);
 
             const size = document.createElement('div');
             size.innerHTML = `<small>Size: ${byteSize(base64String)}B</small>`;
@@ -153,8 +146,9 @@
             const pixels = decode(blurhash, imageData.width, imageData.height);
             src = rgbaToDataURL(imageData.width, imageData.height, pixels);
 
-            const blurCode = div.querySelector('code');
+            const blurCode = document.createElement('code');
             blurCode.textContent = `${blurhash}`;
+            blurImg.after(blurCode);
 
             const size = document.createElement('div');
             size.innerHTML = `<small>Size: ${byteSize(blurhash)}B</small>`;
@@ -197,8 +191,10 @@
             src = thumbHashToDataURL(thumbhash);
 
             const base64String = binaryToBase64(thumbhash);
-            const blurCode = div.querySelector('code');
+
+            const blurCode = document.createElement('code');
             blurCode.textContent = `${base64String}`;
+            blurImg.after(blurCode);
 
             const size = document.createElement('div');
             size.innerHTML = `<small>Size: ${byteSize(base64String)}B</small>`;
@@ -286,7 +282,9 @@
         return canvas.toDataURL('image/webp');
       }
 
-      function byteSize(str) { return new Blob([str]).size; }
+      function byteSize(str) {
+        return new Blob([str]).size;
+      }
 
       async function webpInit(module, moduleOptionOverrides) {
           if (await simd()) {
@@ -300,13 +298,15 @@
       }
 
       async function webpEncode(data, options = {}) {
-          if (!emscriptenModule)
-              emscriptenModule = webpInit();
+          if (!emscriptenModule) {
+            emscriptenModule = webpInit();
+          }
           const _options = { ...defaultOptions, ...options };
           const module = await emscriptenModule;
           const result = module.encode(data.data, data.width, data.height, _options);
-          if (!result)
-              throw new Error('Encoding error.');
+          if (!result) {
+            throw new Error('Encoding error.');
+          }
           return result.buffer;
       }
 
