@@ -86,13 +86,10 @@
 
     <script type="module">
       import { encode, decode } from 'https://cdn.jsdelivr.net/npm/blurhash@2.0.5/dist/index.mjs';
-      import { rgbaToThumbHash, thumbHashToDataURL, rgbaToDataURL, thumbHashToRGBA } from 'https://cdn.jsdelivr.net/npm/thumbhash@0.1.1/thumbhash.js';
+      import { rgbaToThumbHash, rgbaToDataURL, thumbHashToRGBA } from 'https://cdn.jsdelivr.net/npm/thumbhash@0.1.1/thumbhash.js';
 
-      import { defaultOptions } from 'https://cdn.jsdelivr.net/npm/@jsquash/webp/meta.js';
-      import { initEmscriptenModule } from 'https://cdn.jsdelivr.net/npm/@jsquash/webp/utils.js';
-      import { simd } from 'https://cdn.jsdelivr.net/npm/wasm-feature-detect@1.6.1/dist/esm/index.js';
-
-      let emscriptenModule;
+      import { encode as webpEncode } from './codecs/webp.js';
+      import { encode as pngEncode } from './codecs/png.js';
 
       for (const row of document.querySelectorAll('.row')) {
         for (const div of row.children) {
@@ -140,11 +137,9 @@
           else if (blurImg.dataset.blur === 'blurhash') {
 
             const image = await loadImage(src);
-            // const resized = await resizeImage(image, size);
             const imageData = getImageData(image);
             const blurhash = encode(imageData.data, imageData.width, imageData.height, 4, 4);
             const pixels = decode(blurhash, imageData.width, imageData.height);
-            src = rgbaToDataURL(imageData.width, imageData.height, pixels);
 
             const blurCode = document.createElement('code');
             blurCode.textContent = `${blurhash}`;
@@ -160,7 +155,6 @@
             const data = { data: pixels, width: image.width, height: image.height };
             const webpArrayBuffer = await webpEncode(data, { quality: 100 });
             const webpBase64String = btoa(String.fromCharCode(...new Uint8Array(webpArrayBuffer)));
-            // const blurDataURL = `data:image/webp;base64,${webpBase64String}`;
 
             const webpDetails = document.createElement('div');
             webpDetails.innerHTML = `<hr><details>
@@ -171,7 +165,10 @@
               <div><small>Size: ${byteSize(webpBase64String)}B</small></div>
             </details>`;
 
-            const pngBase64String = src.slice(22);
+            const pngArrayBuffer = await pngEncode(data);
+            const pngBase64String = btoa(String.fromCharCode(...new Uint8Array(pngArrayBuffer)));
+            src = `data:image/png;base64,${pngBase64String}`;
+
             const pngDetails = document.createElement('div');
             pngDetails.innerHTML = `<hr><details>
               <summary>Base64 PNG conversion <small>Size: ${byteSize(pngBase64String)}B</small></summary>
@@ -188,7 +185,7 @@
             // const resized = await resizeImage(image, size);
             const imageData = getImageData(image);
             const thumbhash = rgbaToThumbHash(imageData.width, imageData.height, imageData.data);
-            src = thumbHashToDataURL(thumbhash);
+            const rgba = thumbHashToRGBA(thumbhash);
 
             const base64String = binaryToBase64(thumbhash);
 
@@ -203,7 +200,6 @@
             note.innerHTML = `<small>Requires JS decoder</small>`;
             blurCode.after(size, note);
 
-            const rgba = thumbHashToRGBA(thumbhash);
             const data = { data: rgba.rgba, width: rgba.w, height: rgba.h };
             const webpArrayBuffer = await webpEncode(data, { quality: 100 });
             const webpBase64String = btoa(String.fromCharCode(...new Uint8Array(webpArrayBuffer)));
@@ -218,7 +214,10 @@
               <div><small>Size: ${byteSize(webpBase64String)}B</small></div>
             </details>`;
 
-            const pngBase64String = src.slice(22);
+            const pngArrayBuffer = await pngEncode(data);
+            const pngBase64String = btoa(String.fromCharCode(...new Uint8Array(pngArrayBuffer)));
+            src = `data:image/png;base64,${pngBase64String}`;
+
             const pngDetails = document.createElement('div');
             pngDetails.innerHTML = `<hr><details>
               <summary>Base64 PNG conversion <small>Size: ${byteSize(pngBase64String)}B</small></summary>
@@ -286,31 +285,6 @@
         return new Blob([str]).size;
       }
 
-      async function webpInit(module, moduleOptionOverrides) {
-          if (await simd()) {
-              const webpEncoder = await import('https://cdn.jsdelivr.net/npm/@jsquash/webp/codec/enc/webp_enc_simd.js');
-              emscriptenModule = initEmscriptenModule(webpEncoder.default, module, moduleOptionOverrides);
-              return emscriptenModule;
-          }
-          const webpEncoder = await import('https://cdn.jsdelivr.net/npm/@jsquash/webp/codec/enc/webp_enc.js');
-          emscriptenModule = initEmscriptenModule(webpEncoder.default, module, moduleOptionOverrides);
-          return emscriptenModule;
-      }
-
-      async function webpEncode(data, options = {}) {
-          if (!emscriptenModule) {
-            emscriptenModule = webpInit();
-          }
-          const _options = { ...defaultOptions, ...options };
-          const module = await emscriptenModule;
-          const result = module.encode(data.data, data.width, data.height, _options);
-          if (!result) {
-            throw new Error('Encoding error.');
-          }
-          return result.buffer;
-      }
-
     </script>
-
   </body>
 </html>
