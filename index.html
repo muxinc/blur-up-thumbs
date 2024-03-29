@@ -88,8 +88,8 @@
       import { encode, decode } from 'https://cdn.jsdelivr.net/npm/blurhash@2.0.5/dist/index.mjs';
       import { rgbaToThumbHash, rgbaToDataURL, thumbHashToRGBA } from 'https://cdn.jsdelivr.net/npm/thumbhash@0.1.1/thumbhash.js';
 
-      import { encode as webpEncode } from './codecs/webp.js';
-      import { encode as pngEncode } from './codecs/png.js';
+      import { encode as webpEncode } from './utils/webp.js';
+      import { encode as pngEncode } from './utils/png.js';
 
       for (const row of document.querySelectorAll('.row')) {
         for (const div of row.children) {

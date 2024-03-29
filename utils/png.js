@@ -1,4 +1,4 @@
-import initPngModule, { encode as pngEncode } from 'https://cdn.jsdelivr.net/npm/@jsquash/png@3.0.0/codec/pkg/squoosh_png.js';
+import initPngModule, { encode as pngEncode, decode as pngDecode } from 'https://cdn.jsdelivr.net/npm/@jsquash/png@3.0.0/codec/pkg/squoosh_png.js';
 
 let pngModule;
 
@@ -17,4 +17,14 @@ export async function encode(data) {
   if (!output) throw new Error('Encoding error.');
 
   return output.buffer;
+}
+
+export async function decode(data) {
+  await init();
+
+  const imageData = await pngDecode(new Uint8Array(data));
+
+  if (!imageData) throw new Error('Encoding error.');
+
+  return imageData;
 }

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Blur Up Thumbs</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 2rem;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      img {
+        width: 100%;
+      }
+
+      code {
+        display: block;
+        font-size: 0.8em;
+        margin-top: 1em;
+        word-break: break-all;
+      }
+
+      small {
+        color: firebrick;
+        font-size: 0.8em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Compare Blur Up Thumbs</h1>
+
+    <div class="table">
+
+      <div class="row">
+        <div>
+          <h3>Original</h3>
+          <img data-src="https://www.mux.com/images/mux-logo.png" data-max-size="320">
+        </div>
+
+        <div>
+          <h3>WebP 16px + Gaussian blur</h3>
+          <img data-src="https://www.mux.com/images/mux-logo.png" data-max-size="16" data-blur="svg">
+        </div>
+
+        <div>
+          <h3>WebP 16px + Gaussian blur + transparency</h3>
+          <img data-src="https://www.mux.com/images/mux-logo.png" data-max-size="16" data-blur="svg-complex">
+        </div>
+      </div>
+
+    </div>
+
+    <script type="module">
+      import resize from 'https://cdn.jsdelivr.net/npm/@jsquash/resize@1.1.1/index.js';
+      import { decode } from './utils/png.js';
+      import { encode } from './utils/webp.js';
+
+      for (const row of document.querySelectorAll('.row')) {
+        for (const div of row.children) {
+
+          const title = div.querySelector('h3');
+          const blurImg = div.querySelector('img');
+          let maxSize = Number(blurImg.dataset.maxSize);
+          let src = `${blurImg.dataset.src}?width=${maxSize}`;
+          let accept = blurImg.dataset.accept;
+
+          if (blurImg.dataset.blur?.startsWith('svg')) {
+
+            const response = await fetch(src, { headers: { 'Accept': accept ?? 'image/png' } });
+            const arrayBuffer = await response.arrayBuffer();
+            const originalImageData = await decode(arrayBuffer);
+            const ratio = originalImageData.width / originalImageData.height;
+            const resizedImageData = await resize(originalImageData, { width: 16, height: 16 / ratio });
+            const webpBuffer = await encode(resizedImageData, { quality: 70 });
+
+            const base64String = btoa(String.fromCharCode(...new Uint8Array(webpBuffer)));
+            const blurDataURL = `data:${response.headers.get('content-type')};base64,${base64String}`;
+            const image = await loadImage(src);
+            const aspectRatio = image.width / image.height;
+
+            const svgBlurFilter = blurImg.dataset.blur === 'svg' ? svgBlurImage : svgBlurImageComplex;
+
+            src = `data:image/svg+xml;charset=utf-8,${svgBlurFilter(blurDataURL, 320, 320 / aspectRatio)}`;
+
+            const blurCode = document.createElement('code');
+            blurCode.textContent = `${base64String}`;
+            blurImg.after(blurCode);
+
+            const size = document.createElement('div');
+            size.innerHTML = `<small>Size: ${byteSize(base64String)}B</small>`;
+
+            const filterToggle = document.createElement('div');
+            filterToggle.innerHTML = `<hr>
+              <label>
+                <input type="checkbox" checked>
+                Blur filter on/off
+              </label>
+            `;
+            filterToggle.querySelector('input').addEventListener('change', (e) => {
+              if (e.target.checked) {
+                blurImg.src = src;
+              } else {
+                blurImg.src = blurDataURL
+              }
+            });
+
+            blurCode.after(size, filterToggle);
+          }
+
+          div.querySelector('img').src = src;
+        }
+      }
+
+      function svgBlurImage(blurDataURL, width, height, std = 20) {
+        const svg = /*html*/`<svg xmlns="http://www.w3.org/2000/svg" ${width ? `width="${width}"` : ''} ${height ? `height="${height}"` : ''}><filter id="b" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${std}"/><feComponentTransfer><feFuncA type="discrete" tableValues="1 1"/></feComponentTransfer></filter><g filter="url(#b)"><image width="100%" height="100%" href="${blurDataURL}"/></g></svg>`;
+        return svg.replace(/#/g, '%23');
+      }
+
+      function svgBlurImageComplex(blurDataURL, width, height, std = 20) {
+        const svg = /*html*/`<svg xmlns="http://www.w3.org/2000/svg" ${width ? `width="${width}"` : ''} ${height ? `height="${height}"` : ''}><filter id="b" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${std}"/><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 100 -1" result="s"/><feFlood x="0" y="0" width="100%" height="100%"/><feComposite operator="out" in="s"/><feComposite in2="SourceGraphic"/><feGaussianBlur stdDeviation="${std}"/></filter><g filter="url(#b)"><image width="100%" height="100%" href="${blurDataURL}"/></g></svg>`;
+        return svg.replace(/#/g, '%23');
+      }
+
+      async function loadImage(src) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = (...args) => reject(args);
+          img.crossOrigin = 'anonymous';
+          img.src = src;
+        });
+      }
+
+      function getImageData(image) {
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const context = canvas.getContext('2d');
+        context.drawImage(image, 0, 0);
+        return context.getImageData(0, 0, image.width, image.height);
+      }
+
+      function binaryToBase64(binary) {
+        return btoa(String.fromCharCode(...binary));
+      }
+
+      async function resizeImage(image, width) {
+        if (image.width <= width) return image;
+
+        const scale = width / Math.max(image.width, image.height)
+
+        return await createImageBitmap(image, {
+          resizeWidth: Math.round(image.width * scale),
+          resizeHeight: Math.round(image.height * scale),
+        });
+      }
+
+      function toWebpDataURL(imageData) {
+        const canvas = document.createElement('canvas');
+        canvas.width = imageData.width;
+        canvas.height = imageData.height;
+        const context = canvas.getContext('2d');
+        context.putImageData(imageData, 0, 0);
+        return canvas.toDataURL('image/webp');
+      }
+
+      function byteSize(str) {
+        return new Blob([str]).size;
+      }
+
+    </script>
+  </body>
+</html>
